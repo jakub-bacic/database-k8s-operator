@@ -1,0 +1,11 @@
+apiVersion: "jakub-bacic.github.com/v1alpha1"
+kind: "Database"
+metadata:
+  name: "example-db"
+spec:
+  database:
+    name: example-db
+    userSecretRef:
+      name: example-user-secret
+  databaseServerRef:
+    name: example-db-server

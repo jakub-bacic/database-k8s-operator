@@ -1,0 +1,10 @@
+apiVersion: "jakub-bacic.github.com/v1alpha1"
+kind: "DatabaseServer"
+metadata:
+  name: "example-db-server"
+spec:
+  type: mysql
+  host: 127.0.0.1
+  port: 3306
+  rootUserSecretRef:
+    name: cloudsql-root

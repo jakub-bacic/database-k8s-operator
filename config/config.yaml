@@ -1,0 +1,3 @@
+apiVersion: jakub-bacic.github.com/v1alpha1
+kind: Database
+projectName: database-k8s-operator

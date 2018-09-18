@@ -1,0 +1,44 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: databases.jakub-bacic.github.com
+spec:
+  group: jakub-bacic.github.com
+  names:
+    kind: Database
+    listKind: DatabaseList
+    plural: databases
+    singular: database
+    shortNames:
+      - db
+  scope: Namespaced
+  version: v1alpha1
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            database:
+              properties:
+                name:
+                  type: string
+                userSecretRef:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                  required:
+                    - name
+              required:
+                - name
+                - userSecretRef
+            databaseServerRef:
+              type: object
+              properties:
+                name:
+                  type: string
+              required:
+                - name
+          required:
+            - database
+            - databaseServerRef
