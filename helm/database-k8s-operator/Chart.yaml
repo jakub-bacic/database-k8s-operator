@@ -1,0 +1,11 @@
+apiVersion: v1
+appVersion: "0.1.0"
+description: A Helm chart for database-k8s-operator
+name: database-k8s-operator
+version: 0.1.0
+home: https://github.com/jakub-bacic/database-k8s-operator
+sources:
+  - https://github.com/jakub-bacic/database-k8s-operator
+maintainers:
+  - name: "Jakub Bacic"
+    email: jakub.bacic@gmail.com

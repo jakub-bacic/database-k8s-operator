@@ -1,0 +1,41 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: {{ template "database-k8s-operator.fullname" . }}
+  labels:
+    app: {{ template "database-k8s-operator.name" . }}
+    chart: {{ template "database-k8s-operator.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+- apiGroups:
+    - jakub-bacic.github.com
+  resources:
+    - "databases"
+    - "databaseservers"
+  verbs:
+    - "*"
+- apiGroups:
+    - ""
+  resources:
+    - secrets
+  verbs:
+    - "get"
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: {{ template "database-k8s-operator.fullname" . }}
+  labels:
+    app: {{ template "database-k8s-operator.name" . }}
+    chart: {{ template "database-k8s-operator.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+subjects:
+- kind: ServiceAccount
+  name: {{ template "database-k8s-operator.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+roleRef:
+  kind: ClusterRole
+  name: {{ template "database-k8s-operator.fullname" . }}
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,10 @@
+image:
+  repository: jbacic/database-k8s-operator
+  tag: 0.1.0
+  pullPolicy: IfNotPresent
+
+createCustomResource: true
+databaseResourceShortNames: ["db"]
+databaseServerResourceShortNames: ["dbserver"]
+
+watchNamespace: default

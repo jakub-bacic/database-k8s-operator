@@ -1,0 +1,52 @@
+database-k8s-operator has been deployed successfully!
+
+In order to manage databases, you must first create DatabaseServer resource and 
+Secret resource with root credentials (or other user with enough priviliges to 
+create/drop databases and users). Secrets with credentials must contain keys named 
+accordingly 'user' and 'password'.
+
+1. Create root user credentials Secret:
+
+  kubectl create secret generic mysql-root-credentials --from-literal user=root --from-literal password=secret
+
+2. Create DatabaseServer resource:
+
+  staging-database-server.yaml
+  ------------------------
+  apiVersion: "jakub-bacic.github.com/v1alpha1"
+  kind: "DatabaseServer"
+  metadata:
+    name: "staging-db-server"
+  spec:
+    type: mysql
+    host: 127.0.0.1
+    port: 3306
+    rootUserSecretRef:
+      name: mysql-root-credentials
+
+  kubectl create -f staging-database-server.yaml
+
+3. Create user credentials Secret for your new db:
+
+  kubectl create secret generic myapp-db-credentials --from-literal user=myappuser --from-literal password=secret
+
+4. Create Database resource:
+
+  myapp-database.yaml
+  ------------------------
+  apiVersion: "jakub-bacic.github.com/v1alpha1"
+  kind: "Database"
+  metadata:
+    name: "myapp-db"
+  spec:
+    database:
+      name: myappdb
+      userSecretRef:
+        name: myapp-db-credentials
+    databaseServerRef:
+      name: staging-db-server
+
+  kubectl create -f myapp-database.yaml
+
+When the Database resource is deleted, associated database and user are dropped 
+in database server.
