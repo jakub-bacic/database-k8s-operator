@@ -8,3 +8,18 @@ databaseResourceShortNames: ["db"]
 databaseServerResourceShortNames: ["dbserver"]
 
 watchNamespace: default
+
+#
+# deployment settings
+#
+resources: {}
+
+podAnnotations: {}
+
+podLabels: {}
+
+nodeSelector: {}
+
+affinity: {}
+
+tolerations: []

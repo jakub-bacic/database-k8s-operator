@@ -18,6 +18,13 @@ spec:
       labels:
         app: {{ template "database-k8s-operator.name" . }}
         release: {{ .Release.Name }}
+        {{- if .Values.podLabels }}
+        {{ .Values.podLabels | toYaml | indent 8 | trim }}
+        {{- end }}
+      {{- if .Values.podAnnotations }}
+      annotations:
+        {{ .Values.podAnnotations | toYaml | indent 8 | trim }}
+      {{- end }}
     spec:
       serviceAccountName: {{ template "database-k8s-operator.fullname" . }}
       containers:
@@ -35,3 +42,19 @@ spec:
               value: {{ .Values.watchNamespace }}
             - name: OPERATOR_NAME
               value: "database-k8s-operator"
+          {{- if .Values.resources }}
+          resources:
+            {{ .Values.resources | toYaml | indent 12 | trim }}
+          {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+        {{ .Values.nodeSelector | toYaml | indent 8 | trim }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+        {{ .Values.affinity | toYaml | indent 8 | trim }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+        {{ .Values.tolerations | toYaml | indent 8 | trim }}
+      {{- end }}
