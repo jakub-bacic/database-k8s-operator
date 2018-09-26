@@ -7,7 +7,7 @@ accordingly 'user' and 'password'.
 
 1. Create root user credentials Secret:
 
-  kubectl create secret generic mysql-root-credentials --from-literal user=root --from-literal password=secret
+  kubectl create secret generic mysql-root-credentials --from-literal password=secret
 
 2. Create DatabaseServer resource:
 
@@ -21,14 +21,16 @@ accordingly 'user' and 'password'.
     type: mysql
     host: 127.0.0.1
     port: 3306
-    rootUserSecretRef:
+    rootUser: root
+    rootPasswordSecretRef:
       name: mysql-root-credentials
+      key: password
 
   kubectl create -f staging-database-server.yaml
 
 3. Create user credentials Secret for your new db:
 
-  kubectl create secret generic myapp-db-credentials --from-literal user=myappuser --from-literal password=secret
+  kubectl create secret generic myapp-db-credentials --from-literal password=secret
 
 4. Create Database resource:
 
@@ -41,8 +43,10 @@ accordingly 'user' and 'password'.
   spec:
     database:
       name: myappdb
-      userSecretRef:
+      user: myappdb_user
+      passwordSecretRef:
         name: myapp-db-credentials
+        key: password
     databaseServerRef:
       name: staging-db-server
 
