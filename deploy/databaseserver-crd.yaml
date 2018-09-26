@@ -18,20 +18,37 @@ spec:
       properties:
         spec:
           properties:
+            type:
+              type: string
             host:
               type: string
             port:
               type: integer
               minimum: 1
               maximum: 65536
+            rootUser:
+              type: string
             rootUserSecretRef:
               type: object
               properties:
                 name:
                   type: string
+                key:
+                  type: string
               required:
                 - name
+                - key
           required:
+            - type
             - host
             - port
+            - rootUser
             - rootUserSecretRef
+  additionalPrinterColumns:
+    - name: Type
+      type: string
+      description: The database server type
+      JSONPath: .spec.type
+    - name: Age
+      type: date
+      JSONPath: .metadata.creationTimestamp

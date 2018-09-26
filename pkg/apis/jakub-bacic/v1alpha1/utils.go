@@ -1,13 +1,12 @@
 package v1alpha1
 
 import (
-	"k8s.io/api/core/v1"
-	"github.com/operator-framework/operator-sdk/pkg/sdk"
 	"fmt"
-	"github.com/mitchellh/mapstructure"
+
+	"github.com/operator-framework/operator-sdk/pkg/sdk"
+	"k8s.io/api/core/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/jakub-bacic/database-k8s-operator/pkg/database"
 )
 
 func getSecret(namespace string, name string) (*v1.Secret, error) {
@@ -28,17 +27,17 @@ func getSecret(namespace string, name string) (*v1.Secret, error) {
 	return secret, nil
 }
 
-func getCredentials(namespace string, name string) (*database.Credentials, error) {
+func getSecretKey(namespace string, name string, key string) (*string, error) {
 	secret, err := getSecret(namespace, name)
 	if err != nil {
 		return nil, err
 	}
 
-	result := &database.Credentials{}
-	err = mapstructure.WeakDecode(secret.Data, result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse credentials data from secret (%v/%v): %v", namespace, name, err)
+	bytes, ok := secret.Data[key]
+	if !ok {
+		return nil, fmt.Errorf("failed to read password from secret (%v/%v): key %v does not exist", namespace, name, key)
 	}
 
-	return result, nil
+	secretValue := string(bytes)
+	return &secretValue, nil
 }

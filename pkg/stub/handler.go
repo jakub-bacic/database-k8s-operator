@@ -100,12 +100,7 @@ func deleteDatabase(ctx context.Context, db *v1alpha1.Database) error {
 		return err
 	}
 
-	userCredentials, err := db.GetUserCredentials()
-	if err != nil {
-		return err
-	}
-
-	if err := dbServer.DeleteDatabase(db.Spec.Database.Name, userCredentials.User); err != nil {
+	if err := dbServer.DeleteDatabase(db.Spec.Database.Name, db.Spec.Database.User); err != nil {
 		return err
 	}
 
