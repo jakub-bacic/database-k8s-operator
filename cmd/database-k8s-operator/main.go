@@ -33,7 +33,7 @@ func main() {
 	if err != nil {
 		logger.Fatalf("failed to get watch namespace: %v", err)
 	}
-	resyncPeriod := time.Duration(0) * time.Second
+	resyncPeriod := time.Duration(10) * time.Second
 	logger.Infof("Watching %s, %s, %s, %d", resource, kind, namespace, 0)
 	sdk.Watch(resource, kind, namespace, resyncPeriod)
 	sdk.Handle(stub.NewHandler())

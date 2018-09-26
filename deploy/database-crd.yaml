@@ -53,10 +53,10 @@ spec:
       type: string
       description: The database server where the given database is located
       JSONPath: .spec.databaseServerRef.name
-    - name: Phase
+    - name: Status
       type: string
-      description: Current database phase (Creating|Created|Deleting)
-      JSONPath: .status.phase
+      description: Current database status (Creating|Created|Deleting|Error)
+      JSONPath: .status.status
     - name: Age
       type: date
       JSONPath: .metadata.creationTimestamp

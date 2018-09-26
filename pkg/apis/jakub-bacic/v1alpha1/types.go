@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jakub-bacic/database-k8s-operator/pkg/database"
 	"github.com/operator-framework/operator-sdk/pkg/sdk"
@@ -61,8 +62,10 @@ type DatabaseSpec struct {
 // DatabaseStatus defines most recent observed status of the database instance. Read-only. More info:
 // https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status
 type DatabaseStatus struct {
-	// Represents current database phase ("" -> "Creating" -> "Created" -> "Deleting").
-	Phase string `json:"phase"`
+	// Represents current database status.
+	Status string `json:"status"`
+	// Stores last error timestamp
+	LastErrorTimestamp int64 `json:"lastErrorTimestamp"`
 }
 
 // DatabaseObject defines database instance desired configuration.
@@ -147,6 +150,17 @@ func (db *Database) GetUserCredentials() (*database.Credentials, error) {
 	}
 
 	return &database.Credentials{user, *password}, nil
+}
+
+func (db *Database) SetError() {
+	now := int64(time.Now().Unix())
+	db.Status.Status = "Error"
+	db.Status.LastErrorTimestamp = now
+}
+
+func (db *Database) TimeSinceLastError() int64 {
+	now := int64(time.Now().Unix())
+	return now - db.Status.LastErrorTimestamp
 }
 
 func (server *DatabaseServer) GetRootUserCredentials() (*database.Credentials, error) {
