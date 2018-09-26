@@ -114,7 +114,7 @@ type DatabaseServerSpec struct {
 	// User to be used (it must have enough permissions to create/drop databases and users)
 	RootUser string `json:"rootUser"`
 	// Secret containing password for the user
-	RootUserSecretRef SecretRef `json:"rootUserSecretRef"`
+	RootPasswordSecretRef SecretRef `json:"rootPasswordSecretRef"`
 }
 
 func (db *Database) GetDatabaseServer() (*DatabaseServer, error) {
@@ -167,7 +167,7 @@ func (server *DatabaseServer) GetRootUserCredentials() (*database.Credentials, e
 	namespace := server.Namespace
 	user := server.Spec.RootUser
 
-	passwordSecretRef := server.Spec.RootUserSecretRef
+	passwordSecretRef := server.Spec.RootPasswordSecretRef
 	password, err := getSecretKey(namespace, passwordSecretRef.Name, passwordSecretRef.Key)
 	if err != nil {
 		return nil, err
