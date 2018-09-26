@@ -34,16 +34,22 @@ spec:
               properties:
                 name:
                   type: string
-                userSecretRef:
+                user:
+                  type: string
+                passwordSecretRef:
                   type: object
                   properties:
                     name:
                       type: string
+                    key:
+                      type: string
                   required:
                     - name
+                    - key
               required:
                 - name
-                - userSecretRef
+                - user
+                - passwordSecretRef
             databaseServerRef:
               type: object
               properties:
@@ -54,4 +60,16 @@ spec:
           required:
             - database
             - databaseServerRef
+  additionalPrinterColumns:
+    - name: Server
+      type: string
+      description: The database server where the given database is located
+      JSONPath: .spec.databaseServerRef.name
+    - name: Status
+      type: string
+      description: Current database status (Creating|Created|Deleting|Error)
+      JSONPath: .status.status
+    - name: Age
+      type: date
+      JSONPath: .metadata.creationTimestamp
 {{- end -}}
