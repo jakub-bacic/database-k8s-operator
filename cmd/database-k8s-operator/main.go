@@ -25,8 +25,6 @@ func main() {
 	logger := logging.GetLogger(ctx)
 	printVersion(ctx)
 
-	sdk.ExposeMetricsPort()
-
 	resource := "jakub-bacic.github.com/v1alpha1"
 	kind := "Database"
 	namespace, err := k8sutil.GetWatchNamespace()

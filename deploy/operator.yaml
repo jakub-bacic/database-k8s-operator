@@ -15,9 +15,6 @@ spec:
       containers:
         - name: database-k8s-operator
           image: jbacic/database-k8s-operator:0.2.0
-          ports:
-          - containerPort: 60000
-            name: metrics
           command:
           - database-k8s-operator
           imagePullPolicy: Always
