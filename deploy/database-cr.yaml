@@ -17,3 +17,5 @@ spec:
     rootPasswordSecretRef:
       name: cloudsql-root
       key: password
+  options:
+    dropOnDelete: false

@@ -65,6 +65,8 @@ type DatabaseSpec struct {
 	Database DatabaseObject `json:"database"`
 	// Database server configuration.
 	DatabaseServer DatabaseServerObject `json:"databaseServer"`
+	// Additional options.
+	Options *OptionsObject `json:"options,omitempty"`
 }
 
 // DatabaseStatus defines most recent observed status of the database instance. Read-only. More info:
@@ -100,6 +102,27 @@ type DatabaseServerObject struct {
 	RootPasswordSecretRef SecretRef `json:"rootPasswordSecretRef"`
 }
 
+// OptionsObject defines additional options.
+type OptionsObject struct {
+	// Drop managed database and user when Database resource is deleted.
+	DropOnDelete *bool `json:"dropOnDelete,omitempty"`
+}
+
+func makePointer(val bool) *bool {
+	return &val
+}
+
+func (db *Database) InitWithDefaults() {
+	if db.Spec.Options == nil {
+		db.Spec.Options = &OptionsObject{}
+	}
+	if db.Spec.Options.DropOnDelete == nil {
+		db.Spec.Options.DropOnDelete = makePointer(true)
+	}
+
+	db.SetStatus(StatusCreating)
+}
+
 func (db *Database) SetStatus(status string) {
 	if status == db.Status.Status {
 		return
@@ -117,6 +140,10 @@ func (db *Database) SetStatus(status string) {
 func (db *Database) TimeSinceLastError() int64 {
 	now := int64(time.Now().Unix())
 	return now - *db.Status.LastErrorTimestamp
+}
+
+func (db *Database) DropOnDelete() bool {
+	return *db.Spec.Options.DropOnDelete
 }
 
 func (db *Database) GetDatabaseUserCredentials() (*database.Credentials, error) {

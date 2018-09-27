@@ -79,6 +79,11 @@ spec:
                 - port
                 - rootUser
                 - rootPasswordSecretRef
+            options:
+              type: object
+              properties:
+                dropOnDelete:
+                  type: boolean
           required:
             - database
             - databaseServer
