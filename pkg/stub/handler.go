@@ -125,20 +125,20 @@ func deleteDatabase(ctx context.Context, db *v1alpha1.Database) error {
 }
 
 func getDatabaseServer(ctx context.Context, db *v1alpha1.Database) (database.DbServer, error) {
-	dbServer, err := db.GetDatabaseServer()
-	if err != nil {
-		return nil, err
-	}
-
 	// at the moment, only 'mysql' type is supported
-	if dbServer.Spec.Type != "mysql" {
-		return nil, fmt.Errorf("unsupported database server type: %v", dbServer.Spec.Type)
+	if db.Spec.DatabaseServer.Type != "mysql" {
+		return nil, fmt.Errorf("unsupported database server type: %v", db.Spec.DatabaseServer.Type)
 	}
 
-	rootCredentials, err := dbServer.GetRootUserCredentials()
+	credentials, err := db.GetDatabaseServerCredentials()
 	if err != nil {
 		return nil, err
 	}
 
-	return &database.MySQLServer{Host: dbServer.Spec.Host, Port: dbServer.Spec.Port, Credentials: rootCredentials}, nil
+	dbServer := &database.MySQLServer{
+		Host:        db.Spec.DatabaseServer.Host,
+		Port:        db.Spec.DatabaseServer.Port,
+		Credentials: credentials,
+	}
+	return dbServer, nil
 }

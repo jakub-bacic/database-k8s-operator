@@ -9,5 +9,11 @@ spec:
     passwordSecretRef:
       name: example-db-user-secret
       key: password
-  databaseServerRef:
-    name: example-db-server
+  databaseServer:
+    type: mysql
+    host: 127.0.0.1
+    port: 3306
+    rootUser: root
+    rootPasswordSecretRef:
+      name: cloudsql-root
+      key: password

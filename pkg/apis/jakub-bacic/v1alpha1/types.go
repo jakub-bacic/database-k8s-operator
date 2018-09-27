@@ -1,11 +1,9 @@
 package v1alpha1
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/jakub-bacic/database-k8s-operator/pkg/database"
-	"github.com/operator-framework/operator-sdk/pkg/sdk"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -55,8 +53,8 @@ type Database struct {
 type DatabaseSpec struct {
 	// Database desired configuration.
 	Database DatabaseObject `json:"database"`
-	// DatabaseServer object reference.
-	DatabaseServerRef ObjectRef `json:"databaseServerRef"`
+	// Database server configuration.
+	DatabaseServer DatabaseServerObject `json:"databaseServer"`
 }
 
 // DatabaseStatus defines most recent observed status of the database instance. Read-only. More info:
@@ -78,33 +76,8 @@ type DatabaseObject struct {
 	PasswordSecretRef SecretRef `json:"passwordSecretRef"`
 }
 
-// DatabaseServerList defines a list of DatabaseServers.
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-type DatabaseServerList struct {
-	metav1.TypeMeta `json:",inline"`
-	// Standard list metadata. More info:
-	// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#metadata
-	metav1.ListMeta `json:"metadata"`
-	// List of DatabaseServers.
-	Items []DatabaseServer `json:"items"`
-}
-
-// DatabaseServer defines a database server instance.
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-type DatabaseServer struct {
-	metav1.TypeMeta `json:",inline"`
-	// Standard object’s metadata. More info:
-	// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#metadata
-	// +k8s:openapi-gen=false
-	metav1.ObjectMeta `json:"metadata"`
-	// Specification of the database server instance. More info:
-	// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status
-	Spec DatabaseServerSpec `json:"spec"`
-}
-
-// DatabaseServerSpec is a specification of the database server instance. More info:
-// https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#spec-and-status
-type DatabaseServerSpec struct {
+// DatabaseServerObject defines database server configuration.
+type DatabaseServerObject struct {
 	// Database type (see docs for the list of currently supported database server types).
 	Type string `json:"type"`
 	// Database server host.
@@ -115,28 +88,6 @@ type DatabaseServerSpec struct {
 	RootUser string `json:"rootUser"`
 	// Secret containing password for the user
 	RootPasswordSecretRef SecretRef `json:"rootPasswordSecretRef"`
-}
-
-func (db *Database) GetDatabaseServer() (*DatabaseServer, error) {
-	namespace := db.Namespace
-	name := db.Spec.DatabaseServerRef.Name
-
-	result := &DatabaseServer{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "DatabaseServer",
-			APIVersion: "jakub-bacic.github.com/v1alpha1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-	err := sdk.Get(result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get database server (%v/%v): %v", namespace, name, err)
-	}
-
-	return result, nil
 }
 
 func (db *Database) GetUserCredentials() (*database.Credentials, error) {
@@ -163,11 +114,11 @@ func (db *Database) TimeSinceLastError() int64 {
 	return now - db.Status.LastErrorTimestamp
 }
 
-func (server *DatabaseServer) GetRootUserCredentials() (*database.Credentials, error) {
-	namespace := server.Namespace
-	user := server.Spec.RootUser
+func (db *Database) GetDatabaseServerCredentials() (*database.Credentials, error) {
+	namespace := db.Namespace
+	user := db.Spec.DatabaseServer.RootUser
 
-	passwordSecretRef := server.Spec.RootPasswordSecretRef
+	passwordSecretRef := db.Spec.DatabaseServer.RootPasswordSecretRef
 	password, err := getSecretKey(namespace, passwordSecretRef.Name, passwordSecretRef.Key)
 	if err != nil {
 		return nil, err
