@@ -36,47 +36,48 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 		logger := logging.GetLogger(ctx)
 
 		switch status := o.Status.Status; status {
-		case "":
+		case v1alpha1.StatusInitial:
 			logger.Infof("Initializing resource")
 			db := o.DeepCopy()
-			db.SetStatus("Creating")
+			db.SetStatus(v1alpha1.StatusCreating)
 			return sdk.Update(db)
-		case "Creating":
+		case v1alpha1.StatusCreating:
 			logger.Infof("Creating db")
 			db := o.DeepCopy()
 			if err := createDatabase(ctx, db); err != nil {
 				logger.Warnf("failed to create db: %v", err)
+				db.SetStatus(v1alpha1.StatusError)
 				return sdk.Update(db)
 			}
-			db.SetFinalizers([]string{"delete-db"})
-			db.SetStatus("Created")
+			db.SetFinalizers([]string{v1alpha1.FinalizerDeleteDb})
+			db.SetStatus(v1alpha1.StatusCreated)
 			return sdk.Update(db)
-		case "Created":
+		case v1alpha1.StatusCreated:
 			if o.DeletionTimestamp != nil {
 				logger.Infof("Resource has been scheduled for deletion")
 				db := o.DeepCopy()
-				db.SetStatus("Deleting")
+				db.SetStatus(v1alpha1.StatusDeleting)
 				return sdk.Update(db)
 			}
-		case "Deleting":
+		case v1alpha1.StatusDeleting:
 			logger.Infof("Deleting db")
 			db := o.DeepCopy()
 			if err := deleteDatabase(ctx, db); err != nil {
 				logger.Warnf("failed to delete db: %v", err)
-				db.SetStatus("Error")
+				db.SetStatus(v1alpha1.StatusError)
 				return sdk.Update(db)
 			}
 			db.SetFinalizers([]string{})
 			return sdk.Update(db)
-		case "Error":
+		case v1alpha1.StatusError:
 			// should be adjusted according to resyncPeriod
 			if o.TimeSinceLastError() >= 10 {
 				logger.Infof("Trying to recover from error status")
 				db := o.DeepCopy()
 				if o.DeletionTimestamp == nil {
-					db.SetStatus("Creating")
+					db.SetStatus(v1alpha1.StatusCreating)
 				} else {
-					db.SetStatus("Deleting")
+					db.SetStatus(v1alpha1.StatusDeleting)
 				}
 				return sdk.Update(db)
 			}

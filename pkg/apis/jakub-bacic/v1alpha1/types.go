@@ -7,6 +7,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	StatusInitial  = ""
+	StatusCreating = "Creating"
+	StatusCreated  = "Created"
+	StatusDeleting = "Deleting"
+	StatusError    = "Error"
+
+	FinalizerDeleteDb = "delete-db"
+)
+
 // ObjectRef defines a reference to other k8s resource.
 type ObjectRef struct {
 	// Name of the resource.
