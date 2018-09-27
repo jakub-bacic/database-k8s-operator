@@ -63,7 +63,7 @@ type DatabaseStatus struct {
 	// Represents current database status.
 	Status string `json:"status"`
 	// Stores last error timestamp
-	LastErrorTimestamp int64 `json:"lastErrorTimestamp"`
+	LastErrorTimestamp *int64 `json:"lastErrorTimestamp,omitempty"`
 }
 
 // DatabaseObject defines database instance desired configuration.
@@ -90,7 +90,26 @@ type DatabaseServerObject struct {
 	RootPasswordSecretRef SecretRef `json:"rootPasswordSecretRef"`
 }
 
-func (db *Database) GetUserCredentials() (*database.Credentials, error) {
+func (db *Database) SetStatus(status string) {
+	if status == db.Status.Status {
+		return
+	}
+
+	if status == "Error" {
+		now := int64(time.Now().Unix())
+		db.Status.LastErrorTimestamp = &now
+	} else {
+		db.Status.LastErrorTimestamp = nil
+	}
+	db.Status.Status = status
+}
+
+func (db *Database) TimeSinceLastError() int64 {
+	now := int64(time.Now().Unix())
+	return now - *db.Status.LastErrorTimestamp
+}
+
+func (db *Database) GetDatabaseCredentials() (*database.Credentials, error) {
 	namespace := db.Namespace
 	user := db.Spec.Database.User
 
@@ -101,17 +120,6 @@ func (db *Database) GetUserCredentials() (*database.Credentials, error) {
 	}
 
 	return &database.Credentials{user, *password}, nil
-}
-
-func (db *Database) SetError() {
-	now := int64(time.Now().Unix())
-	db.Status.Status = "Error"
-	db.Status.LastErrorTimestamp = now
-}
-
-func (db *Database) TimeSinceLastError() int64 {
-	now := int64(time.Now().Unix())
-	return now - db.Status.LastErrorTimestamp
 }
 
 func (db *Database) GetDatabaseServerCredentials() (*database.Credentials, error) {

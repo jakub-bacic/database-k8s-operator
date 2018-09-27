@@ -39,24 +39,23 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 		case "":
 			logger.Infof("Initializing resource")
 			db := o.DeepCopy()
-			db.Status.Status = "Creating"
+			db.SetStatus("Creating")
 			return sdk.Update(db)
 		case "Creating":
 			logger.Infof("Creating db")
 			db := o.DeepCopy()
 			if err := createDatabase(ctx, db); err != nil {
 				logger.Warnf("failed to create db: %v", err)
-				db.SetError()
 				return sdk.Update(db)
 			}
 			db.SetFinalizers([]string{"delete-db"})
-			db.Status.Status = "Created"
+			db.SetStatus("Created")
 			return sdk.Update(db)
 		case "Created":
 			if o.DeletionTimestamp != nil {
 				logger.Infof("Resource has been scheduled for deletion")
 				db := o.DeepCopy()
-				db.Status.Status = "Deleting"
+				db.SetStatus("Deleting")
 				return sdk.Update(db)
 			}
 		case "Deleting":
@@ -64,11 +63,10 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 			db := o.DeepCopy()
 			if err := deleteDatabase(ctx, db); err != nil {
 				logger.Warnf("failed to delete db: %v", err)
-				db.SetError()
+				db.SetStatus("Error")
 				return sdk.Update(db)
 			}
 			db.SetFinalizers([]string{})
-			db.Status.Status = "Deleted"
 			return sdk.Update(db)
 		case "Error":
 			// should be adjusted according to resyncPeriod
@@ -76,9 +74,9 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 				logger.Infof("Trying to recover from error status")
 				db := o.DeepCopy()
 				if o.DeletionTimestamp == nil {
-					db.Status.Status = "Creating"
+					db.SetStatus("Creating")
 				} else {
-					db.Status.Status = "Deleting"
+					db.SetStatus("Deleting")
 				}
 				return sdk.Update(db)
 			}
@@ -95,7 +93,7 @@ func createDatabase(ctx context.Context, db *v1alpha1.Database) error {
 		return err
 	}
 
-	userCredentials, err := db.GetUserCredentials()
+	userCredentials, err := db.GetDatabaseServerCredentials()
 	if err != nil {
 		return err
 	}
