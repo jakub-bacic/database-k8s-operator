@@ -12,7 +12,6 @@ rules:
     - jakub-bacic.github.com
   resources:
     - "databases"
-    - "databaseservers"
   verbs:
     - "*"
 - apiGroups:

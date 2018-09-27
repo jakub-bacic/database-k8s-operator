@@ -50,21 +50,47 @@ spec:
                 - name
                 - user
                 - passwordSecretRef
-            databaseServerRef:
+            databaseServer:
               type: object
               properties:
-                name:
+                type:
                   type: string
+                host:
+                  type: string
+                port:
+                  type: integer
+                  minimum: 1
+                  maximum: 65536
+                rootUser:
+                  type: string
+                rootPasswordSecretRef:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    key:
+                      type: string
+                  required:
+                    - name
+                    - key
               required:
-                - name
+                - type
+                - host
+                - port
+                - rootUser
+                - rootPasswordSecretRef
           required:
             - database
-            - databaseServerRef
+            - databaseServer
   additionalPrinterColumns:
-    - name: Server
+    - name: DB Type
       type: string
-      description: The database server where the given database is located
-      JSONPath: .spec.databaseServerRef.name
+      description: The database server type
+      JSONPath: .spec.databaseServer.type
+    - name: DB Host
+      type: string
+      description: The database server host
+      JSONPath: .spec.databaseServer.host
     - name: Status
       type: string
       description: Current database status (Creating|Created|Deleting|Error)
