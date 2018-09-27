@@ -1,6 +1,6 @@
 image:
   repository: jbacic/database-k8s-operator
-  tag: 0.3.0
+  tag: 0.4.0
   pullPolicy: IfNotPresent
 
 createCustomResource: true
