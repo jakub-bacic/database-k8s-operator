@@ -94,7 +94,7 @@ func createDatabase(ctx context.Context, db *v1alpha1.Database) error {
 		return err
 	}
 
-	userCredentials, err := db.GetDatabaseServerCredentials()
+	userCredentials, err := db.GetDatabaseUserCredentials()
 	if err != nil {
 		return err
 	}

@@ -119,7 +119,7 @@ func (db *Database) TimeSinceLastError() int64 {
 	return now - *db.Status.LastErrorTimestamp
 }
 
-func (db *Database) GetDatabaseCredentials() (*database.Credentials, error) {
+func (db *Database) GetDatabaseUserCredentials() (*database.Credentials, error) {
 	namespace := db.Namespace
 	user := db.Spec.Database.User
 
