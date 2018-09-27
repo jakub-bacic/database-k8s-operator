@@ -39,9 +39,14 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 		case v1alpha1.StatusInitial:
 			logger.Infof("Initializing resource")
 			db := o.DeepCopy()
-			db.SetStatus(v1alpha1.StatusCreating)
+			db.InitWithDefaults()
 			return sdk.Update(db)
 		case v1alpha1.StatusCreating:
+			logger = logger.WithFields(logging.Fields{
+				"dbName":   o.Spec.Database.Name,
+				"dbUser":   o.Spec.Database.User,
+				"dbServer": o.Spec.DatabaseServer.Host,
+			})
 			logger.Infof("Creating db")
 			db := o.DeepCopy()
 			if err := createDatabase(ctx, db); err != nil {
@@ -49,6 +54,7 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 				db.SetStatus(v1alpha1.StatusError)
 				return sdk.Update(db)
 			}
+			logger.Infof("Database created")
 			db.SetFinalizers([]string{v1alpha1.FinalizerDeleteDb})
 			db.SetStatus(v1alpha1.StatusCreated)
 			return sdk.Update(db)
@@ -60,12 +66,22 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 				return sdk.Update(db)
 			}
 		case v1alpha1.StatusDeleting:
-			logger.Infof("Deleting db")
+			logger = logger.WithFields(logging.Fields{
+				"dbName":   o.Spec.Database.Name,
+				"dbUser":   o.Spec.Database.User,
+				"dbServer": o.Spec.DatabaseServer.Host,
+			})
 			db := o.DeepCopy()
-			if err := deleteDatabase(ctx, db); err != nil {
-				logger.Warnf("failed to delete db: %v", err)
-				db.SetStatus(v1alpha1.StatusError)
-				return sdk.Update(db)
+			if db.DropOnDelete() {
+				logger.Infof("Deleting db")
+				if err := deleteDatabase(ctx, db); err != nil {
+					logger.Warnf("failed to delete db: %v", err)
+					db.SetStatus(v1alpha1.StatusError)
+					return sdk.Update(db)
+				}
+				logger.Infof("Database deleted")
+			} else {
+				logger.Infof("DropOnDelete is disabled - skipping delete action")
 			}
 			db.SetFinalizers([]string{})
 			return sdk.Update(db)
@@ -87,8 +103,6 @@ func (h *Handler) Handle(ctx context.Context, event sdk.Event) error {
 }
 
 func createDatabase(ctx context.Context, db *v1alpha1.Database) error {
-	logger := logging.GetLogger(ctx)
-
 	dbServer, err := getDatabaseServer(ctx, db)
 	if err != nil {
 		return err
@@ -103,13 +117,10 @@ func createDatabase(ctx context.Context, db *v1alpha1.Database) error {
 		return err
 	}
 
-	logger.Infof("New database created")
 	return nil
 }
 
 func deleteDatabase(ctx context.Context, db *v1alpha1.Database) error {
-	logger := logging.GetLogger(ctx)
-
 	dbServer, err := getDatabaseServer(ctx, db)
 	if err != nil {
 		return err
@@ -119,7 +130,6 @@ func deleteDatabase(ctx context.Context, db *v1alpha1.Database) error {
 		return err
 	}
 
-	logger.Infof("Database deleted")
 	return nil
 }
 

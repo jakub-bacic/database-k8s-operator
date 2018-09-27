@@ -4,16 +4,18 @@ metadata:
   name: "example-db"
 spec:
   database:
-    name: example-db
-    user: example-db-user
+    name: jbtest
+    user: jbtest
     passwordSecretRef:
-      name: example-db-user-secret
+      name: jbtest
       key: password
   databaseServer:
     type: mysql
     host: 127.0.0.1
     port: 3306
-    rootUser: root
+    rootUser: flyps-root
     rootPasswordSecretRef:
       name: cloudsql-root
       key: password
+  options:
+    dropOnDelete: false

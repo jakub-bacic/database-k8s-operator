@@ -31,8 +31,21 @@ database-k8s-operator has been deployed successfully!
       rootPasswordSecretRef:
         name: mysql-root-credentials
         key: password
+    options:
+      dropOnDelete: true
 
   kubectl create -f myapp-database.yaml
 
-When the Database resource is deleted, associated database and user are dropped 
-in database server.
+4. List defined databases in cluster:
+
+  kubectl get databases
+
+  or using short forms:
+
+  {{- range .Values.databaseResourceShortNames }}
+  kubectl get {{ . }}
+  {{- end }}
+
+When the Database resource is deleted, associated database and user in database server
+are dropped by default. This behavior can be changed by modifying dropOnDelete option
+in Database spec.
